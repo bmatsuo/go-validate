@@ -1,11 +1,12 @@
 
 [install go]: http://golang.org/install.html "Install Go"
-[the godoc url]: http://localhost:6060/pkg/github.com/bmatsuo/confighelper/ "the Godoc URL"
+[the godoc url]: http://localhost:6060/pkg/github.com/bmatsuo/go-validate/ "the Godoc URL"
+[gopkgdoc url]: http://gopkgdoc.appspot.com/pkg/github.com/bmatsuo/go-validate/ "the GoPkgDoc URL"
 
-About confighelper
+About go-validate
 =============
 
-confighelper is the best program for...
+Go-validate helps with validation. It's pretty general, and only mildly useful.
 
 Documentation
 =============
@@ -18,20 +19,12 @@ Prerequisites
 Installation
 -------------
 
-    go get github.com/bmatsuo/confighelper
+    go get github.com/bmatsuo/go-validate
 
 General Documentation
 ---------------------
 
-Use `go doc` to vew the documentation for confighelper
-
-    go doc github.com/bmatsuo/confighelper
-
-Or alternatively, use a godoc http server
-
-    godoc -http=:6060
-
-and visit [the Godoc URL][]
+[check out GoPkgDoc][gopkgdoc url]
 
 
 Author
