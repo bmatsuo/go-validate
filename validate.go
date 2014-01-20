@@ -8,7 +8,43 @@
  *  Description: Main source file in confighelper
  */
 
-// Package validate helps with validation.
+/*
+Package validate helps with validation.
+
+	type Qux int
+	func (qux Qux) Validate() error {
+		if qux == 0 {
+			return errors.New("qux")
+		}
+		return nil
+	}
+
+	type Bar struct { Baz Qux }
+	func (bar Bar) Validate() error { return validator.Property("Baz", bar.Baz) }
+
+	type Foo struct { Bars []Bar }
+	func (foo *Foo) Validate() error {
+		return validator.PropertyFunc("Bars", func() (err error) {
+			for i, bar := range foo.Bars {
+				if err = validator.Index(i, bar); err != nil {
+					return
+				}
+			}
+			return
+		})
+	}
+
+	func main() {
+		foo := new(Foo)
+		err := json.Unmarshal(foo, []byte(`{
+			"Bars": [
+				{ "Baz": 1 },
+				{ "Baz": 0 }
+			]
+		}`))
+		validator.V(foo) // `Bar[1].Baz: qux`
+	}
+*/
 package validate
 
 import (
@@ -34,7 +70,7 @@ func V(v interface{}) error {
 //		type Qux int
 //		func (qux Qux) Validate() error { return errors.New("qux") }
 //		type Foo struct { Bar Qux }
-//      func (foo *Foo) Validate() error {
+//		func (foo *Foo) Validate() error {
 //			return validator.Property("Bar", foo.Bar)
 //		}
 //		validator.V(&Foo{1}) // `Bar: qux`
@@ -46,23 +82,6 @@ func Property(property string, value interface{}) error {
 // 
 // Try to use Property() instead.
 //
-//		type Qux int
-//		func (qux Qux) Validate() error { return errors.New("qux") }
-//		type Foo struct { Bars []struct { Baz Qux } }
-//		func (foo *Foo) Validate() error {
-//			return validator.PropertyFunc("Bars", func() (err error) {
-//				for i, bar := range foo.Bars {
-//					if err = validator.IndexFunc(i, func() error {
-//						return validator.Property("Baz", bar.Baz)
-//					})
-//					if err != nil {
-//						return
-//					}
-//				}
-//				return
-//			})
-//		}
-//		validator.V(&Foo{[]struct{Baz string}{"qux"}}) // `Bar[0].Baz: qux`
 func PropertyFunc(property interface{}, validate func() error) error {
 	if err := validate(); err != nil {
 		return PropertyError{fmt.Sprint(property), nil, err}
@@ -115,7 +134,7 @@ func (err PropertyError) Error() string {
 	return fmt.Sprintf("%s: %v", prefix, err.err)
 }
 
-// Validate property element values values (see Property).
+// Validate property element values (see Property).
 func Index(index, value interface{}) error {
 	return IndexFunc(index, func() error {
 		if err := V(value); err != nil {
@@ -125,27 +144,7 @@ func Index(index, value interface{}) error {
 	})
 }
 
-// Used in tricker cases of validating elements of properties that are slices/maps
-//
-// Try to use Index() instead.
-//
-//		type Qux int
-//		func (qux Qux) Validate() error { return errors.New("qux") }
-//		type Foo struct { Bars []struct { Baz struct { Qux } } }
-//		func (foo *Foo) Validate() error {
-//			return validator.PropertyFunc("Bars", func(k *interface{}) error {
-//				for i, bar := range foo.Bars {
-//					err := validator.IndexFunc(i, func() error {
-//						return validator.Property("Baz", bar.Baz)
-//					})
-//					if err != nil {
-//						return err
-//					}
-//				}
-//				return nil
-//			})
-//		}
-//		validator.V(&Foo{[]struct{Baz string}{"qux"}}) // `Bar[0].Baz: qux`
+// Used for validating properties that are slices/maps
 func IndexFunc(index interface{}, validate func() error) (err error) {
 	if err = validate(); err != nil {
 		return PropertyError{"", index, err}
